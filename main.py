@@ -1,24 +1,6 @@
-import random
 import math
-
-import matplotlib.pyplot as plt
-
-def objective_function(state):
-    """
-    Essa funcao verifica quantas rainhas estao ameacadas.
-    """
-    score = len(state) * (len(state) - 1)
-    # Coluna => Rainha que estamos vendo se esta ameacada
-    for col in range(len(state)):
-        # Linha => Rainha que pode estar ameacando
-        for row in range(len(state)):
-            if col != row:
-                if state[col] == state[row]:
-                    score -= 1
-                    continue
-                if abs(col - row) == abs(state[col] - state[row]):
-                    score -= 1
-    return score
+import random
+import time
 
 
 def cost_function(state):
@@ -62,9 +44,8 @@ def simple_hill_climbing(initial_state, max_iterations=1000, stop_on_max_local=F
         tuple: (best_state, best_value) found by the algorithm
     """
     current_state = initial_state
-    current_value = objective_function(current_state)
-    scores = [current_value]
-
+    current_value = cost_function(current_state)
+    costs = [current_value]
 
     for _ in range(max_iterations):
         # Get neighboring states
@@ -75,21 +56,19 @@ def simple_hill_climbing(initial_state, max_iterations=1000, stop_on_max_local=F
 
         # Check neighbors one by one (Simple Hill Climbing)
         for neighbor in neighbors:
-            neighbor_value = objective_function(neighbor)
+            neighbor_value = cost_function(neighbor)
             # If t we find a better neighbor, move to it immediately
-            if neighbor_value > current_value:
-                scores.append(neighbor_value)
+            if neighbor_value < current_value:
+                costs.append(neighbor_value)
                 current_state = neighbor
                 current_value = neighbor_value
                 found_better = True
-                break 
+                break
 
-        if neighbor_value == 56:
+        if not found_better:
             break
-        # if not found_better:
-            # break
 
-    return current_state, scores
+    return current_state, costs
 
 
 def simulated_annealing(
@@ -103,8 +82,6 @@ def simulated_annealing(
 
     while t_zero > 0.1:
         neighbors = get_neighbors(state)
-
-        current_cost = cost_function(state)
 
         for neighbor in neighbors:
             neighbor_cost = cost_function(neighbor)
@@ -137,24 +114,70 @@ def simulated_annealing(
     return best_solution, costs
 
 
-def make_comparison_plot(costs1, costs2):
+def run_once() -> tuple[dict, dict]:
+    """
+    Run the hill climbing and simulated annealing algorithms once
+    and return the results.
+    """
+    initial_state = [random.randint(0, 7) for _ in range(8)]
+    hc_it = time.time()
+    hill_climbing_result = simple_hill_climbing(initial_state)
+    hc_time = time.time() - hc_it
 
-    plt.plot(costs1, label='Simple Hill Climbing')
-    plt.plot(costs2, label='Simulated Annealing')
-    # Align the x-axis and y-axis to 0,0
-    plt.xlabel('Iterations')
-    plt.ylabel('Cost')
-    plt.title('Comparison of Optimization Algorithms')
-    plt.legend()
-    plt.savefig('comparison_plot.png')
+    sa_it = time.time()
+    simulated_annealing_result = simulated_annealing(initial_state)
+    sa_time = time.time() - sa_it
+
+    return {
+        "hill_climbing": {
+            "state": hill_climbing_result[0],
+            "time": hc_time,
+            "scores": hill_climbing_result[1]
+        },
+        "simulated_annealing": {
+            "state": simulated_annealing_result[0],
+            "time": sa_time,
+            "scores": simulated_annealing_result[1]
+        }
+    }
 
 
 def main():
-    initial_state = [random.randint(0, 7) for _ in range(8)]
-    hill_climb_result = simple_hill_climbing(initial_state)
-    sa_result = simulated_annealing(initial_state)
+    """
+    Main function to run the algorithms and print the results.
+    """
+    hill_climbing_results = []
+    simulated_annealing_results = []
 
-    make_comparison_plot(hill_climb_result[1], sa_result[1])
+    for _ in range(500):
+        results = run_once()
+        hill_climbing_results.append(results["hill_climbing"])
+        simulated_annealing_results.append(results["simulated_annealing"])
+
+    # Print the results
+    print("Resultados do Hill Climbing:")
+    avg_time_hc = sum(result["time"] for result in hill_climbing_results) / len(hill_climbing_results)
+    avg_score_hc = sum(result["scores"][-1] for result in hill_climbing_results) / len(hill_climbing_results)
+    print(f"Tempo médio: {avg_time_hc:.4f} segundos")
+    print(f"Pontuação média: {avg_score_hc:.4f}")
+    print("Melhor estado:", min(hill_climbing_results, key=lambda x: x["state"])["state"])
+    print("Melhor pontuação:", min(hill_climbing_results, key=lambda x: x["state"])["scores"][-1])
+    print("Melhor tempo:", min(hill_climbing_results, key=lambda x: x["time"])["time"])
+    print("Pior pontuação:", max(hill_climbing_results, key=lambda x: x["state"])["scores"][-1])
+    print("Pior tempo:", max(hill_climbing_results, key=lambda x: x["time"])["time"])
+    print()
+    print("Resultados do Simulated Annealing:")
+    avg_time_sa = sum(result["time"] for result in simulated_annealing_results) / len(simulated_annealing_results)
+    avg_score_sa = sum(result["scores"][-1] for result in simulated_annealing_results) / len(simulated_annealing_results)
+    print(f"Tempo médio: {avg_time_sa:.4f} segundos")
+    print(f"Pontuação média: {avg_score_sa:.4f}")
+    print("Melhor estado:", min(simulated_annealing_results, key=lambda x: x["state"])["state"])
+    print("Melhor pontuação:", min(simulated_annealing_results, key=lambda x: x["state"])["scores"][-1])
+    print("Melhor tempo:", min(simulated_annealing_results, key=lambda x: x["time"])["time"])
+    print("Pior pontuação:", max(simulated_annealing_results, key=lambda x: x["state"])["scores"][-1])
+    print("Pior tempo:", max(simulated_annealing_results, key=lambda x: x["time"])["time"])
+    print()
+
 
 if __name__ == "__main__":
     main()

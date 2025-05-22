@@ -1,0 +1,35 @@
+[
+    {
+        "population_size": 30,
+        "max_iterations": 500,
+        "results": {
+            "median_fitness": -21.995376373310318,
+            "std_fitness": 0.0043901647883295486,
+            "mean_fitness": -21.993544165360877,
+            "best_fitness": -21.988388320582988,
+            "best_fitness_config": null
+        }
+    },
+    {
+        "population_size": 50,
+        "max_iterations": 1000,
+        "results": {
+            "median_fitness": -21.996604987470647,
+            "std_fitness": 0.0020114992003006462,
+            "mean_fitness": -21.9967643271243,
+            "best_fitness": -21.997855554590206,
+            "best_fitness_config": null
+        }
+    },
+    {
+        "population_size": 100,
+        "max_iterations": 2000,
+        "results": {
+            "median_fitness": -21.998834710745697,
+            "std_fitness": 0.0009785022893604382,
+            "mean_fitness": -21.998610264036895,
+            "best_fitness": -21.99811265556955,
+            "best_fitness_config": null
+        }
+    }
+]

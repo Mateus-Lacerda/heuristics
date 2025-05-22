@@ -64,7 +64,8 @@
 - **Rotated High Conditional Elliptic**: Todas as configurações mostram alta variabilidade, com valores de fitness distantes do mínimo global, sugerindo que o ACOR não é ideal para essa função sem ajustes.
 
 **Como rodar o código**:
-É recomendado utilizar o `uv` para facilitar gerenciamento de versões.
+
+###### \* É recomendado utilizar o `uv` para facilitar gerenciamento de versões.
 ```bash
 uv sync
 ```

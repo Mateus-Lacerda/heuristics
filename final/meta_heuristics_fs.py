@@ -11,8 +11,6 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 
-np.random.seed(1)
-
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
@@ -83,6 +81,7 @@ class AntColonyOptimizationFS:
         x_validation_dataframe=pd.DataFrame(),
         y_validation_dataframe=pd.DataFrame(),
         use_validation_data=True,
+        penalize_parameters_size=True,
         cost_function_improvement="increase",
         average=None,
         iterations=100,
@@ -106,6 +105,7 @@ class AntColonyOptimizationFS:
         self.run_time = run_time
         self.print_iteration_result = print_iteration_result
         self.evaporation_rate = evaporation_rate
+        self.penalize_parameters_size = penalize_parameters_size
         self.Q = Q
 
         self.last_score = 0
@@ -138,7 +138,8 @@ class AntColonyOptimizationFS:
             if self.average:
                 fold_cost.append(
                     self.cost_function(
-                        y_test, y_test_predict, average=self.average)
+                        y_test, y_test_predict, average=self.average
+                    )
                 )
             if self.use_validation_data:
                 fold_cost.append(
@@ -148,6 +149,16 @@ class AntColonyOptimizationFS:
                         average=self.average,
                     )
                 )
+            elif self.penalize_parameters_size:
+                fold_cost.append(
+                    self.cost_function(
+                        y_test,
+                        y_test_predict,
+                        current_params_size=len(current_at_feature_subset),
+                        total_params_size=len(self.columns_list)
+                    )
+                )
+
             else:
                 fold_cost.append(self.cost_function(y_test, y_test_predict))
                 if self.use_validation_data:

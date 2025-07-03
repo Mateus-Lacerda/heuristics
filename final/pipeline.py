@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 import scipy.io
 from sklearn.linear_model import LinearRegression
@@ -44,9 +46,18 @@ def prepare_data(
     return x_cal, y_cal, x_test, y_test, x_val, wavenumbers
 
 
-def cost_function(actual: pd.DataFrame, predicted: pd.DataFrame):
+def cost_function(
+    actual: pd.DataFrame, predicted: pd.DataFrame, 
+    current_params_size: int | None = None,
+    total_params_size: int | None = None
+):
     """Cost function to calculate mean squared error."""
-    return ((actual - predicted) ** 2).mean()
+    mse = ((actual - predicted) ** 2).mean()
+    if not current_params_size:
+        return mse
+    if current_params_size < 1:
+        current_params_size = 1
+    return 0.8 * mse + 0.2 * (current_params_size/total_params_size)
 
 
 def find_best_features(config: dict = {"foo": "bar"}) -> list:
@@ -59,6 +70,7 @@ def find_best_features(config: dict = {"foo": "bar"}) -> list:
             }
         },
         use_validation_data=False,
+        penalize_parameters_size=True,
         model=LinearRegression(),
         cost_function_improvement='decrease',
         cost_function=cost_function,
@@ -71,6 +83,9 @@ def find_best_features(config: dict = {"foo": "bar"}) -> list:
     )
     return aco.GetBestFeatures()
 
+
 if __name__ == '__main__':
     best_features = find_best_features()
+    with open("features.json", "w") as f:
+        json.dump(best_features, f, indent=4)
     print("Melhores features encontradas:", best_features)
